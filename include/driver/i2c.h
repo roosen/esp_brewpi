@@ -29,6 +29,7 @@
 #define I2C_SLEEP_TIME 2
 
 #undef IICSECOND
+#define IICTHIRD
 
 #if defined(IICSECOND)
   #define I2C_SDA_MUX PERIPHS_IO_MUX_U0TXD_U
@@ -38,6 +39,14 @@
   #define I2C_SCK_MUX PERIPHS_IO_MUX_U0RXD_U
   #define I2C_SCK_FUNC FUNC_GPIO3
   #define I2C_SCK_PIN 3
+#elif defined(IICTHIRD)
+  #define I2C_SDA_MUX PERIPHS_IO_MUX_MTMS_U
+  #define I2C_SDA_FUNC FUNC_GPIO14
+  #define I2C_SDA_PIN 14
+
+  #define I2C_SCK_MUX PERIPHS_IO_MUX_MTDI_U
+  #define I2C_SCK_FUNC FUNC_GPIO12
+  #define I2C_SCK_PIN 12
 #else
   #define I2C_SDA_MUX PERIPHS_IO_MUX_GPIO2_U
   #define I2C_SDA_FUNC FUNC_GPIO2

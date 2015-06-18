@@ -5,9 +5,15 @@
 #include "osapi.h"
 #include "gpio.h"
 
+#if 0
 #define ONEWIRE_MUX		PERIPHS_IO_MUX_GPIO2_U
 #define ONEWIRE_FUNC	FUNC_GPIO2
 #define ONEWIRE_PIN		2
+#else
+#define ONEWIRE_MUX		PERIPHS_IO_MUX_MTCK_U
+#define ONEWIRE_FUNC	FUNC_GPIO13
+#define ONEWIRE_PIN		13
+#endif
 
 #define ONEWIRE_SEARCHROM 			0xF0
 #define ONEWIRE_READROM				0x33

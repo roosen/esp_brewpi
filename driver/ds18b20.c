@@ -10,6 +10,7 @@
 
 #include "driver/onewire.h"
 #include "driver/ds18b20.h"
+#include "../user/httpclient.h"
 
 
 #define MAX_SENSORS 2
@@ -25,6 +26,7 @@
 
 static int num_sensors;
 static uint8_t addrs[MAX_SENSORS][8];
+static uint8_t t[MAX_SENSORS][20];
 
 
 void ICACHE_FLASH_ATTR ds18b20_scan(void)
@@ -86,6 +88,7 @@ void ICACHE_FLASH_ATTR ds18b20_read_all(void)
 			os_printf("[%d] Scratchpad CRC error!\r\n");
 		} else {
 			int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract;
+
 			LowByte = data[0];
 			HighByte = data[1];
 			TReading = (HighByte << 8) + LowByte;
@@ -96,11 +99,22 @@ void ICACHE_FLASH_ATTR ds18b20_read_all(void)
 			Whole = TReading >> 4;  // separate off the whole and fractional portions
 			Fract = (TReading & 0xf) * 100 / 16;
 
-			os_printf("[%d] Temperature: %c%d.%d Celsius (", j, SignBit ? '-' : '+', Whole, Fract < 10 ? 0 : Fract);
+			os_sprintf(t[j], "%c%d.%02d", SignBit ? '-' : '+', Whole, Fract);
+			OLED_Print(0, j * 2, t[j], 2);
+
+			os_printf("[%d] Temperature: %s Celsius (", j, t[j]);
 			for (i = 0; i < SCRATCHPAD_SIZE; i++)
 				os_printf("%2x ", data[i]);
 
 			os_printf(")\r\n");
 		}
 	}
+}
+
+void ICACHE_FLASH_ATTR ds18b20_publish(void)
+{
+	uint8_t str_url[265];
+	// Send temperature to Thingspeak.com
+	os_sprintf(str_url, "key=KEY_THINGSPEAK&field1=%s&field2=%s&field3=%s", t[0], t[1], t[2]);
+	http_post("http://api.thingspeak.com/update", str_url, NULL);
 }
