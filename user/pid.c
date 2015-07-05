@@ -21,8 +21,8 @@ static void PID_Initialize(struct pid_t *pid)
  *    The parameters specified here are those for for which we can't set up 
  *    reliable defaults, so we need to have the user set them.
  ***************************************************************************/
-void PID_Create(struct pid_t *pid, double* Input, double* Output,
-		double* Setpoint, double Kp, double Ki, double Kd,
+void PID_Create(struct pid_t *pid, double *Input, double *Output,
+		double *Setpoint, double Kp, double Ki, double Kd,
 		int ControllerDirection)
 {
 
@@ -37,13 +37,10 @@ void PID_Create(struct pid_t *pid, double* Input, double* Output,
 	 */
 	PID_SetOutputLimits(pid, 0, 255);
 
-	/* default Controller Sample Time is 0.1 seconds */
-	pid->SampleTime = 100;
-
 	PID_SetControllerDirection(pid, ControllerDirection);
 	PID_SetTunings(pid, Kp, Ki, Kd);
 
-	pid->lastTime = system_get_time() - pid->SampleTime;
+	pid->lastTime = system_get_time();
 }
 
 /* Compute() **********************************************************************
@@ -56,44 +53,44 @@ int PID_Compute(struct pid_t *pid)
 {
 	unsigned long now;
 	unsigned long timeChange;
+	double timeChangeSec;
+	double input;
+	double error;
+	double dInput;
+	double output;
 
 	if (!pid->inAuto)
 		return 0;
 
 	now = system_get_time();
 	timeChange = (now - pid->lastTime);
+	timeChangeSec = (double)timeChange / 1000000.0;
 
-	if (timeChange >= pid->SampleTime) {
-		/* Compute all the working error variables */
-		double input = *pid->myInput;
-		double error = *pid->mySetpoint - input;
-		double dInput;
-		double output;
+	/* Compute all the working error variables */
+	input = *pid->myInput;
+	error = *pid->mySetpoint - input;
 
-		pid->ITerm += (pid->ki * error);
-		if (pid->ITerm > pid->outMax)
-			pid->ITerm = pid->outMax;
-		else if (pid->ITerm < pid->outMin)
-			pid->ITerm = pid->outMin;
+	pid->ITerm += pid->ki * error * timeChangeSec;
+	if (pid->ITerm > pid->outMax)
+		pid->ITerm = pid->outMax;
+	else if (pid->ITerm < pid->outMin)
+		pid->ITerm = pid->outMin;
 
-		dInput = (input - pid->lastInput);
+	dInput = (input - pid->lastInput);
 
-		/* Compute PID Output */
-		output = pid->kp * error + pid->ITerm - pid->kd * dInput;
+	/* Compute PID Output */
+	output = pid->kp * error + pid->ITerm - pid->kd * dInput / timeChangeSec;
 
-		if (output > pid->outMax)
-			output = pid->outMax;
-		else if (output < pid->outMin)
-			output = pid->outMin;
-		*pid->myOutput = output;
+	if (output > pid->outMax)
+		output = pid->outMax;
+	else if (output < pid->outMin)
+		output = pid->outMin;
+	*pid->myOutput = output;
 
-		/* Remember some variables for next time */
-		pid->lastInput = input;
-		pid->lastTime = now;
-		return 1;
-	} else {
-		return 0;
-	}
+	/* Remember some variables for next time */
+	pid->lastInput = input;
+	pid->lastTime = now;
+	return 1;
 }
 
 /* SetTunings(...)*************************************************************
@@ -103,37 +100,17 @@ int PID_Compute(struct pid_t *pid)
  ******************************************************************************/
 void PID_SetTunings(struct pid_t *pid, double Kp, double Ki, double Kd)
 {
-	double SampleTimeInSec;
-
 	if (Kp < 0 || Ki < 0 || Kd < 0)
 		return;
 
-	pid->dispKp = Kp;
-	pid->dispKi = Ki;
-	pid->dispKd = Kd;
-
-	SampleTimeInSec = ((double) pid->SampleTime) / 1000;
 	pid->kp = Kp;
-	pid->ki = Ki * SampleTimeInSec;
-	pid->kd = Kd / SampleTimeInSec;
+	pid->ki = Ki;
+	pid->kd = Kd;
 
 	if (pid->controllerDirection == REVERSE) {
 		pid->kp = (0 - pid->kp);
 		pid->ki = (0 - pid->ki);
 		pid->kd = (0 - pid->kd);
-	}
-}
-
-/* SetSampleTime(...) *********************************************************
- * sets the period, in Milliseconds, at which the calculation is performed	
- ******************************************************************************/
-void PID_SetSampleTime(struct pid_t *pid, int NewSampleTime)
-{
-	if (NewSampleTime > 0) {
-		double ratio = (double) NewSampleTime / (double) pid->SampleTime;
-		pid->ki *= ratio;
-		pid->kd /= ratio;
-		pid->SampleTime = (unsigned long) NewSampleTime;
 	}
 }
 
@@ -204,17 +181,17 @@ void PID_SetControllerDirection(struct pid_t *pid, int Direction)
  ******************************************************************************/
 double PID_GetKp(struct pid_t *pid)
 {
-	return pid->dispKp;
+	return pid->kp;
 }
 
 double PID_GetKi(struct pid_t *pid)
 {
-	return pid->dispKi;
+	return pid->ki;
 }
 
 double PID_GetKd(struct pid_t *pid)
 {
-	return pid->dispKd;
+	return pid->kd;
 }
 
 int PID_GetMode(struct pid_t *pid)

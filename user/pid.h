@@ -10,14 +10,6 @@
 
 
 struct pid_t {
-	/*
-	 * we'll hold on to the tuning parameters in user-entered
-	 * format for display purposes
-	 */
-	double dispKp;
-	double dispKi;
-	double dispKd;
-
 	double kp; /* (P)roportional Tuning Parameter */
 	double ki; /* (I)ntegral Tuning Parameter     */
 	double kd; /* (D)erivative Tuning Parameter   */
@@ -37,7 +29,6 @@ struct pid_t {
 	unsigned long lastTime;
 	double ITerm, lastInput;
 
-	unsigned long SampleTime;
 	double outMin, outMax;
 	int inAuto;
 };
@@ -84,12 +75,6 @@ void PID_SetTunings(struct pid_t *pid, double, double, double);
  * once it is set in the constructor.
  */
 void PID_SetControllerDirection(struct pid_t *pid, int);
-
-/*
- * sets the frequency, in Milliseconds, with which
- * the PID calculation is performed.  default is 100
- */
-void PID_SetSampleTime(struct pid_t *pid, int);
 
 
 /* Display functions ****************************************************************/
