@@ -8,6 +8,7 @@
 #include "user_config.h"
 #include "driver/i2c.h"
 #include "driver/i2c_oled.h"
+#include "beerctrl.h"
 
 
 #define CONFIG_MQTT
@@ -62,6 +63,8 @@ void ICACHE_FLASH_ATTR user_init(void)
 	uart_init();
 	i2c_init();
 	OLED_Init();
+
+	BCTRL_Init();
 
 	os_timer_disarm(&ds18b20_timer);
 	os_timer_setfn(&ds18b20_timer, (os_timer_func_t *)timer_cb, (void *)0);

@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "user_config.h"
 #include "config.h"
+#include "beerctrl.h"
 
 struct espconn *pMqttConn;
 os_timer_t japDelayChack;
@@ -240,31 +241,30 @@ static void deliver_publish(mqtt_state_t* state, uint8_t* message, int length)
 	os_memcpy(buff, (char*)event_data.data, event_data.data_length);
 	os_strcpy(sysCfg.ota_host, buff);
 
-	os_printf("New message on topic: ");
+	os_printf("New msg on: ");
 	os_printf(topic);	
 	os_printf("\r\n");
-	os_printf("Message: ");
+	os_printf("Msg: ");
 	os_printf(buff);
 	os_printf("\r\n");
 
-	if ((strcmp(topic,(uint8_t*)"external/temperature/rear"))==0) {
-		strcat(buff, "C");
-		strcpy(ext_temp,buff);
-	        OLED_Print(1, 0, "External", 1);
-		OLED_Print(1, 2, "       ", 2);
-		OLED_Print(1, 2, ext_temp, 2);
-	} else if ((strcmp(topic,(uint8_t*)"desk/temperature"))==0) {
-		strcat(buff, "C");
-		strcpy(ext_temp,buff);
-	        OLED_Print(14, 0, "Room", 1);
-		OLED_Print(9, 2, "       ", 2);
-		OLED_Print(9, 2, room_temp, 2);
-	} else if ((strcmp(topic,(uint8_t*)"displays/esp8266oled2"))==0) {
-		strcpy(infomsg,buff);
-		OLED_Print(0, 7, "                    ", 1);
-		OLED_Print(0, 7, infomsg, 1);
+	if ((strcmp(topic,(uint8_t*)"setting/beer/temp")) == 0) {
+		BCTRL_SetTemp(atoi(buff));
+	} else if ((strcmp(topic, (uint8_t*)"setting/beer/ctrl")) == 0) {
+		if ((strcmp(buff, (uint8_t*)"auto")) == 0) {
+			BCTRL_SetCtrl(BCTRL_CTRL_AUTOMATIC);
+		} else {
+			BCTRL_SetCtrl(BCTRL_CTRL_MANUAL);
+		}
+	} else if ((strcmp(topic, (uint8_t*)"setting/beer/fridge")) == 0) {
+		if ((strcmp(buff, (uint8_t*)"cool")) == 0) {
+			BCTRL_SetFridge(BCTRL_FRIDGE_COOL);
+		} else if ((strcmp(buff, (uint8_t*)"heat")) == 0) {
+			BCTRL_SetFridge(BCTRL_FRIDGE_HEAT);
+		} else {
+			BCTRL_SetFridge(BCTRL_FRIDGE_OFF);
+		}
 	}
-
 }
 
 
@@ -296,8 +296,7 @@ mqtt_tcpclient_recv(void *arg, char *pdata, unsigned short len)
 			} else {
 				os_printf("MQTT: Connected\r\n");
 				connState = MQTT_SUBSCIBE_SEND;
-				OLED_CLS();
-				OLED_Print(4, 7, "MQTT Connected", 1);
+				OLED_Print(5, 6, "MQTT", 1);
 			}
 			break;
 		case MQTT_SUBSCIBE_SENDING:
@@ -313,7 +312,6 @@ mqtt_tcpclient_recv(void *arg, char *pdata, unsigned short len)
 				} else {
 					connState = MQTT_SUBSCIBE_SEND;
 				}
-
 		//	}
 			break;
 		case MQTT_DATA:
@@ -526,7 +524,7 @@ MQTT_Task(os_event_t *events)
 		break;
 	case WIFI_CONNECTED:
 
-		OLED_Print(4, 4, "WiFi Connected", 1);
+		OLED_Print(0, 6, "WIFI", 1);
 
 		pCon = (struct espconn *)os_zalloc(sizeof(struct espconn));
 		pCon->type = ESPCONN_TCP;
@@ -586,11 +584,9 @@ void MQTT_Start()
 	connState = WIFI_INIT;
 	os_sprintf(client_id, MQTT_CLIENT_ID, sysCfg.device_id);	//MQTT client id
 
-	os_sprintf(mqtt_topic[0], "external/temperature/rear",sysCfg.device_id);  // 1st topic to subscribe to
-
-	os_sprintf(mqtt_topic[1], "desk/temperature", sysCfg.device_id); 	// 2nd topic to subscribe to
-
-	os_sprintf(mqtt_topic[2], "displays/esp8266oled2", sysCfg.device_id); 	// 3rd topic to subscribe to
+	os_sprintf(mqtt_topic[0], "setting/beer/temp",sysCfg.device_id);  // 1st topic to subscribe to
+	os_sprintf(mqtt_topic[1], "setting/beer/ctrl",sysCfg.device_id);  // 2nd topic to subscribe to
+	os_sprintf(mqtt_topic[2], "setting/beer/fridge",sysCfg.device_id);  // 3rd topic to subscribe to
 
 	os_sprintf(pub_topic, "/%08X/send", sysCfg.device_id);		// send data to topic: /chipid/send
 
