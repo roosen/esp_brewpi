@@ -2,6 +2,10 @@
 #include "driver/gpio16.h"
 #include "driver/i2c_oled.h"
 
+#define CONFIG_KP   4
+#define CONFIG_TEMP 11
+#define PERIOD      256
+
 struct beerctrl_t {
 	int ctrl;
 	int temp;
@@ -35,9 +39,9 @@ void ICACHE_FLASH_ATTR BCTRL_Init(void)
 	gpio16_output_set(1);
 	gpio16_output_conf();
 
-	BCTRL_SetKP(50);
-	BCTRL_SetTemp(0);
-	BCTRL_SetCtrl(BCTRL_CTRL_MANUAL);
+	BCTRL_SetKP(CONFIG_KP);
+	BCTRL_SetTemp(CONFIG_TEMP << 4);
+	BCTRL_SetCtrl(BCTRL_CTRL_AUTOMATIC);
 	setFridge(BCTRL_FRIDGE_OFF);
 }
 
@@ -90,12 +94,12 @@ void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 		OLED_Print(0, 3, "err:", 1);
 		OLED_Print(5, 3, buf, 1);
 
-		b.output = b.kp * -error / 100;
+		b.output = b.kp * error;
 
-		if (b.output > 1000)
-			b.output = 1000;
-		else if (b.output < 0)
-			b.output = 0;
+		if (b.output > PERIOD)
+			b.output = PERIOD;
+		else if (b.output < -PERIOD)
+			b.output = -PERIOD;
 
 		os_sprintf(buf, "%d", b.output);
 		OLED_Print(0, 4, "out:", 1);
@@ -105,15 +109,15 @@ void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 
 void ICACHE_FLASH_ATTR BCTRL_Trigger(void)
 {
-	static cnt;
+	static int cnt;
 
-	if (cnt >= b.output) {
+	if (cnt >= -b.output) {
 		setFridge(BCTRL_FRIDGE_OFF);
 	} else {
 		setFridge(BCTRL_FRIDGE_COOL);
 	}
 
 	cnt++;
-	if (cnt >= 1000)
+	if (cnt >= PERIOD)
 		cnt = 0;
 }

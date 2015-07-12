@@ -64,7 +64,7 @@ static void ICACHE_FLASH_ATTR timer_cb(void *arg)
 		default:
 			break;
 	}
-	if (cnt % 10)
+	if (cnt)
 		BCTRL_Trigger();
 }
 
