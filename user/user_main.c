@@ -10,7 +10,7 @@
 #include "driver/i2c_oled.h"
 
 
-//#define CONFIG_WIFI
+#define CONFIG_MQTT
 
 #define DELAY 1000 /* milliseconds */
 #define DS18B20_SCAN_CNT 60
@@ -67,11 +67,11 @@ void ICACHE_FLASH_ATTR user_init(void)
 	os_timer_setfn(&ds18b20_timer, (os_timer_func_t *)timer_cb, (void *)0);
 	os_timer_arm(&ds18b20_timer, DELAY, 1);
 
-#ifdef CONFIG_WIFI
+#ifdef CONFIG_MQTT
 	wifi_set_opmode(STATION_MODE);
 	CFG_Load();
 	MQTT_Start();
-#endif /* CONFIG_WIFI */
+#endif /* CONFIG_MQTT */
 
 	os_printf("System started ...\n");
 }
