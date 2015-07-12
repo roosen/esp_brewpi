@@ -40,6 +40,8 @@ static void ICACHE_FLASH_ATTR timer_cb(void *arg)
 			if (!ds18b20_get_temp(0, &temp)) {
 				char buf[16];
 
+				BCTRL_ReportNewReading(0, temp);
+
 				temp_to_string(temp, buf, sizeof(buf));
 				OLED_Print(0, 0, buf, 2);
 				os_printf("Temperature: %s Celsius\r\n", buf);

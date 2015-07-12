@@ -9,7 +9,7 @@ struct beerctrl_t {
 
 static struct beerctrl_t b;
 
-static void setFridge(int state)
+static void ICACHE_FLASH_ATTR setFridge(int state)
 {
 	switch (state) {
 	case BCTRL_FRIDGE_COOL:
@@ -28,7 +28,7 @@ static void setFridge(int state)
 	}
 }
 
-void BCTRL_Init(void)
+void ICACHE_FLASH_ATTR BCTRL_Init(void)
 {
 	gpio16_output_conf();
 	BCTRL_SetTemp(0);
@@ -36,7 +36,7 @@ void BCTRL_Init(void)
 	setFridge(BCTRL_FRIDGE_OFF);
 }
 
-void BCTRL_SetTemp(int16_t temp)
+void ICACHE_FLASH_ATTR BCTRL_SetTemp(int16_t temp)
 {
 	unsigned char buf[16];
 	b.temp = temp;
@@ -47,7 +47,7 @@ void BCTRL_SetTemp(int16_t temp)
 	OLED_Print(7, 7, buf, 1);
 }
 
-void BCTRL_SetCtrl(int ctrl)
+void ICACHE_FLASH_ATTR BCTRL_SetCtrl(int ctrl)
 {
 	b.ctrl = ctrl;
 	if (b.ctrl == BCTRL_CTRL_AUTOMATIC) {
@@ -57,9 +57,14 @@ void BCTRL_SetCtrl(int ctrl)
 	}
 }
 
-void BCTRL_SetFridge(int state)
+void ICACHE_FLASH_ATTR BCTRL_SetFridge(int state)
 {
 	if (b.ctrl == BCTRL_CTRL_MANUAL) {
 		setFridge(state);
 	}
+}
+
+void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
+{
+	;
 }
