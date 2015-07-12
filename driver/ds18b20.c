@@ -111,21 +111,3 @@ int ICACHE_FLASH_ATTR ds18b20_get_temp(int idx, int16_t *temp)
 
 	return 0;
 }
-
-void ICACHE_FLASH_ATTR ds18b20_temp_to_string(int16_t temp, char *buf, int sz)
-{
-	int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract, i;
-	unsigned char *data = (unsigned char *)&temp;
-
-	LowByte = data[0];
-	HighByte = data[1];
-	TReading = (HighByte << 8) + LowByte;
-	SignBit = TReading & 0x8000;  // test most sig bit
-	if (SignBit) // negative
-		TReading = (TReading ^ 0xffff) + 1; // 2's comp
-
-	Whole = TReading >> 4;  // separate off the whole and fractional portions
-	Fract = (TReading & 0xf) * 100 / 16;
-
-	os_sprintf(buf, "%c%d.%02d", SignBit ? '-' : '+', Whole, Fract);
-}

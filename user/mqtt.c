@@ -249,7 +249,7 @@ static void deliver_publish(mqtt_state_t* state, uint8_t* message, int length)
 	os_printf("\r\n");
 
 	if ((strcmp(topic,(uint8_t*)"setting/beer/temp")) == 0) {
-		BCTRL_SetTemp(atoi(buff));
+		BCTRL_SetTemp(atoi(buff) << 4);
 	} else if ((strcmp(topic, (uint8_t*)"setting/beer/ctrl")) == 0) {
 		if ((strcmp(buff, (uint8_t*)"auto")) == 0) {
 			BCTRL_SetCtrl(BCTRL_CTRL_AUTOMATIC);

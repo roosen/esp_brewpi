@@ -6,4 +6,7 @@
 uint32_t UTILS_Atoh(const int8_t *s);
 uint8_t UTILS_StrToIP(const int8_t* str, void *ip);
 uint8_t UTILS_IsIPV4 (int8_t *str);
+
+void ICACHE_FLASH_ATTR temp_to_string(int16_t temp, char *buf, int sz);
+
 #endif

@@ -35,10 +35,11 @@
 #include <ctype.h>
 #include <math.h>
 #include <stddef.h>
+#include <osapi.h>
 #include "utils.h"
 
 
-uint8_t UTILS_IsIPV4 (int8_t *str)
+uint8_t ICACHE_FLASH_ATTR UTILS_IsIPV4 (int8_t *str)
 {
 	uint8_t segs = 0;   /* Segment count. */
 	uint8_t chcnt = 0;  /* Character count within segment. */
@@ -88,7 +89,7 @@ uint8_t UTILS_IsIPV4 (int8_t *str)
 
     return 1;
 }
-uint8_t UTILS_StrToIP(const int8_t* str, void *ip)
+uint8_t ICACHE_FLASH_ATTR UTILS_StrToIP(const int8_t* str, void *ip)
 {
 
 	    /* The count of the number of bytes processed. */
@@ -127,7 +128,8 @@ uint8_t UTILS_StrToIP(const int8_t* str, void *ip)
 	    return 1;
 
 }
-uint32_t UTILS_Atoh(const int8_t *s)
+
+uint32_t ICACHE_FLASH_ATTR UTILS_Atoh(const int8_t *s)
 {
 	uint32_t value = 0, digit;
 	int8_t c;
@@ -147,3 +149,13 @@ uint32_t UTILS_Atoh(const int8_t *s)
 	return value;
 }
 
+void ICACHE_FLASH_ATTR temp_to_string(int16_t temp, char *buf, int sz)
+{
+	int SignBit, Whole, Fract;
+
+	// separate off the whole and fractional portions
+	Whole = temp >> 4;
+	Fract = (temp & 0xf) * 100 / 16;
+
+	os_sprintf(buf, "%c%d.%02d", (temp < 0) ? '-' : '+', Whole, Fract);
+}

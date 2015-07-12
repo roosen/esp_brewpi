@@ -36,11 +36,12 @@ void BCTRL_Init(void)
 	setFridge(BCTRL_FRIDGE_OFF);
 }
 
-void BCTRL_SetTemp(int t)
+void BCTRL_SetTemp(int16_t temp)
 {
 	unsigned char buf[16];
-	b.temp = t;
-	os_sprintf(buf, "%d", t);
+	b.temp = temp;
+
+	temp_to_string(temp, buf, sizeof(buf));
 
 	OLED_Print(3, 7, "SET:", 1);
 	OLED_Print(7, 7, buf, 1);
