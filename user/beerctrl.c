@@ -34,6 +34,8 @@ void ICACHE_FLASH_ATTR BCTRL_Init(void)
 {
 	gpio16_output_set(1);
 	gpio16_output_conf();
+
+	BCTRL_SetKP(50);
 	BCTRL_SetTemp(0);
 	BCTRL_SetCtrl(BCTRL_CTRL_MANUAL);
 	setFridge(BCTRL_FRIDGE_OFF);
@@ -41,18 +43,24 @@ void ICACHE_FLASH_ATTR BCTRL_Init(void)
 
 void ICACHE_FLASH_ATTR BCTRL_SetKP(int kp)
 {
+	unsigned char buf[16];
+
 	b.kp = kp;
+
+	os_sprintf(buf, "%d", b.kp);
+	OLED_Print(14, 7, "KP:", 1);
+	OLED_Print(17, 7, buf, 1);
 }
 
 void ICACHE_FLASH_ATTR BCTRL_SetTemp(int16_t temp)
 {
 	unsigned char buf[16];
+
 	b.temp = temp;
 
-	temp_to_string(temp, buf, sizeof(buf));
-
-	OLED_Print(3, 7, "SET:", 1);
-	OLED_Print(7, 7, buf, 1);
+	temp_to_string(b.temp, buf, sizeof(buf));
+	OLED_Print(3, 7, "T:", 1);
+	OLED_Print(5, 7, buf, 1);
 }
 
 void ICACHE_FLASH_ATTR BCTRL_SetCtrl(int ctrl)
@@ -77,7 +85,7 @@ void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 	if (b.ctrl == BCTRL_CTRL_AUTOMATIC) {
 		int32_t error = b.temp - temp;
 
-		b.output = b.kp * -error;
+		b.output = b.kp * -error / 100;
 
 		if (b.output > 1000)
 			b.output = 1000;

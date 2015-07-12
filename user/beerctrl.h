@@ -16,6 +16,7 @@
 #define BCTRL_FRIDGE_COOL    1
 #define BCTRL_FRIDGE_HEAT    2
 
+void BCTRL_SetKP(int kp);
 void BCTRL_SetTemp(int16_t temp);
 void BCTRL_SetCtrl(int ctrl);
 void BCTRL_SetFridge(int state);

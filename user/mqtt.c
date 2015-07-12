@@ -253,17 +253,18 @@ static void deliver_publish(mqtt_state_t* state, uint8_t* message, int length)
 	} else if ((strcmp(topic, (uint8_t*)"setting/beer/ctrl")) == 0) {
 		if ((strcmp(buff, (uint8_t*)"auto")) == 0) {
 			BCTRL_SetCtrl(BCTRL_CTRL_AUTOMATIC);
-		} else {
-			BCTRL_SetCtrl(BCTRL_CTRL_MANUAL);
-		}
-	} else if ((strcmp(topic, (uint8_t*)"setting/beer/fridge")) == 0) {
-		if ((strcmp(buff, (uint8_t*)"cool")) == 0) {
+		} else if ((strcmp(buff, (uint8_t*)"cool")) == 0) {
 			BCTRL_SetFridge(BCTRL_FRIDGE_COOL);
 		} else if ((strcmp(buff, (uint8_t*)"heat")) == 0) {
 			BCTRL_SetFridge(BCTRL_FRIDGE_HEAT);
+		} else if ((strcmp(buff, (uint8_t*)"off")) == 0) {
+			BCTRL_SetFridge(BCTRL_FRIDGE_OFF);
 		} else {
+			BCTRL_SetCtrl(BCTRL_CTRL_MANUAL);
 			BCTRL_SetFridge(BCTRL_FRIDGE_OFF);
 		}
+	} else if ((strcmp(topic, (uint8_t*)"setting/beer/kp")) == 0) {
+		BCTRL_SetKP(atoi(buff) << 4);
 	}
 }
 
@@ -586,7 +587,7 @@ void MQTT_Start()
 
 	os_sprintf(mqtt_topic[0], "setting/beer/temp",sysCfg.device_id);  // 1st topic to subscribe to
 	os_sprintf(mqtt_topic[1], "setting/beer/ctrl",sysCfg.device_id);  // 2nd topic to subscribe to
-	os_sprintf(mqtt_topic[2], "setting/beer/fridge",sysCfg.device_id);  // 3rd topic to subscribe to
+	os_sprintf(mqtt_topic[2], "setting/beer/kp",sysCfg.device_id);  // 3rd topic to subscribe to
 
 	os_sprintf(pub_topic, "/%08X/send", sysCfg.device_id);		// send data to topic: /chipid/send
 
