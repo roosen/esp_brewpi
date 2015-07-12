@@ -5,6 +5,8 @@
 struct beerctrl_t {
 	int ctrl;
 	int temp;
+	int output;
+	int kp;
 };
 
 static struct beerctrl_t b;
@@ -30,10 +32,16 @@ static void ICACHE_FLASH_ATTR setFridge(int state)
 
 void ICACHE_FLASH_ATTR BCTRL_Init(void)
 {
+	gpio16_output_set(1);
 	gpio16_output_conf();
 	BCTRL_SetTemp(0);
 	BCTRL_SetCtrl(BCTRL_CTRL_MANUAL);
 	setFridge(BCTRL_FRIDGE_OFF);
+}
+
+void ICACHE_FLASH_ATTR BCTRL_SetKP(int kp)
+{
+	b.kp = kp;
 }
 
 void ICACHE_FLASH_ATTR BCTRL_SetTemp(int16_t temp)
@@ -66,5 +74,29 @@ void ICACHE_FLASH_ATTR BCTRL_SetFridge(int state)
 
 void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 {
-	;
+	if (b.ctrl == BCTRL_CTRL_AUTOMATIC) {
+		int32_t error = b.temp - temp;
+
+		b.output = b.kp * -error;
+
+		if (b.output > 1000)
+			b.output = 1000;
+		else if (b.output < 0)
+			b.output = 0;
+	}
+}
+
+void ICACHE_FLASH_ATTR BCTRL_Trigger(void)
+{
+	static cnt;
+
+	if (cnt >= b.output) {
+		setFridge(BCTRL_FRIDGE_OFF);
+	} else {
+		setFridge(BCTRL_FRIDGE_COOL);
+	}
+
+	cnt++;
+	if (cnt >= 1000)
+		cnt = 0;
 }

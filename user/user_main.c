@@ -64,6 +64,8 @@ static void ICACHE_FLASH_ATTR timer_cb(void *arg)
 		default:
 			break;
 	}
+	if (cnt % 10)
+		BCTRL_Trigger();
 }
 
 static void ICACHE_FLASH_ATTR uart_init(void)

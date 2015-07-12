@@ -21,5 +21,6 @@ void BCTRL_SetCtrl(int ctrl);
 void BCTRL_SetFridge(int state);
 
 void BCTRL_ReportNewReading(int idx, int16_t temp);
+void BCTRL_Trigger(void);
 
 #endif /* USER_BEERCTRL_H_ */
