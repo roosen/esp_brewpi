@@ -83,7 +83,12 @@ void ICACHE_FLASH_ATTR BCTRL_SetFridge(int state)
 void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 {
 	if (b.ctrl == BCTRL_CTRL_AUTOMATIC) {
+		unsigned char buf[16];
 		int32_t error = b.temp - temp;
+
+		os_sprintf(buf, "%d", error);
+		OLED_Print(0, 3, "err:", 1);
+		OLED_Print(5, 3, buf, 1);
 
 		b.output = b.kp * -error / 100;
 
@@ -91,6 +96,10 @@ void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 			b.output = 1000;
 		else if (b.output < 0)
 			b.output = 0;
+
+		os_sprintf(buf, "%d", b.output);
+		OLED_Print(0, 4, "out:", 1);
+		OLED_Print(5, 4, buf, 1);
 	}
 }
 
