@@ -26,7 +26,7 @@
 
 static int num_sensors;
 static uint8_t addrs[MAX_SENSORS][8];
-static uint8_t t[MAX_SENSORS][20];
+static int16_t t[MAX_SENSORS];
 
 
 void ICACHE_FLASH_ATTR ds18b20_scan(void)
@@ -87,34 +87,45 @@ void ICACHE_FLASH_ATTR ds18b20_read_all(void)
 		if (crc8(data, 9)) {
 			os_printf("[%d] Scratchpad CRC error!\r\n");
 		} else {
-			int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract;
+			t[j] = *(int16_t *)data;
 
-			LowByte = data[0];
-			HighByte = data[1];
-			TReading = (HighByte << 8) + LowByte;
-			SignBit = TReading & 0x8000;  // test most sig bit
-			if (SignBit) // negative
-				TReading = (TReading ^ 0xffff) + 1; // 2's comp
+#ifdef CONFIG_DEBUG_SCRATCHPAD
+			os_printf("(\r\n");
 
-			Whole = TReading >> 4;  // separate off the whole and fractional portions
-			Fract = (TReading & 0xf) * 100 / 16;
-
-			os_sprintf(t[j], "%c%d.%02d", SignBit ? '-' : '+', Whole, Fract);
-			OLED_Print(0, j * 2, t[j], 2);
-
-			os_printf("[%d] Temperature: %s Celsius (", j, t[j]);
 			for (i = 0; i < SCRATCHPAD_SIZE; i++)
 				os_printf("%2x ", data[i]);
 
 			os_printf(")\r\n");
+#endif
 		}
 	}
 }
 
-void ICACHE_FLASH_ATTR ds18b20_publish(void)
+int ICACHE_FLASH_ATTR ds18b20_get_temp(int idx, int16_t *temp)
 {
-	uint8_t str_url[265];
-	// Send temperature to Thingspeak.com
-	os_sprintf(str_url, "key=KEY_THINGSPEAK&field1=%s&field2=%s&field3=%s", t[0], t[1], t[2]);
-	http_post("http://api.thingspeak.com/update", str_url, NULL);
+	if (idx < 0 || idx >= num_sensors)
+		return -1;
+
+	if (temp)
+		*temp = t[idx];
+
+	return 0;
+}
+
+void ICACHE_FLASH_ATTR ds18b20_temp_to_string(int16_t temp, char *buf, int sz)
+{
+	int HighByte, LowByte, TReading, SignBit, Tc_100, Whole, Fract, i;
+	unsigned char *data = (unsigned char *)&temp;
+
+	LowByte = data[0];
+	HighByte = data[1];
+	TReading = (HighByte << 8) + LowByte;
+	SignBit = TReading & 0x8000;  // test most sig bit
+	if (SignBit) // negative
+		TReading = (TReading ^ 0xffff) + 1; // 2's comp
+
+	Whole = TReading >> 4;  // separate off the whole and fractional portions
+	Fract = (TReading & 0xf) * 100 / 16;
+
+	os_sprintf(buf, "%c%d.%02d", SignBit ? '-' : '+', Whole, Fract);
 }

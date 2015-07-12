@@ -18,13 +18,12 @@
 
 static os_timer_t ds18b20_timer;
 
-extern void ds18b20_publish(void);
-
 
 static void ICACHE_FLASH_ATTR timer_cb(void *arg)
 {
 	static int state;
 	static int cnt;
+	int16_t temp;
 
 	cnt++;
 	switch (state % 3) {
@@ -38,8 +37,21 @@ static void ICACHE_FLASH_ATTR timer_cb(void *arg)
 			break;
 		case 2:
 			ds18b20_read_all();
+			if (!ds18b20_get_temp(0, &temp)) {
+				char buf[16];
+				ds18b20_temp_to_string(temp, buf, sizeof(buf));
+				OLED_Print(0, 0, buf, 2);
+				os_printf("Temperature: %s Celsius\r\n", buf);
+
+				if (cnt >= DS18B20_SCAN_CNT) {
+					uint8_t str_url[265];
+					// Send temperature to Thingspeak.com
+					os_sprintf(str_url, "key=KEY_THINGSPEAK&field1=%s", buf);
+					http_post("http://api.thingspeak.com/update", str_url, NULL);
+				}
+			}
+
 			if (cnt >= DS18B20_SCAN_CNT) {
-				ds18b20_publish();
 				cnt = 0;
 				state = 0;
 			} else {
