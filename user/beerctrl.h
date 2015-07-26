@@ -16,6 +16,21 @@
 #define BCTRL_FRIDGE_COOL    1
 #define BCTRL_FRIDGE_HEAT    2
 
+#define BCTRL_EVENT_FRIDGE   0
+#define BCTRL_EVENT_KP       1
+#define BCTRL_EVENT_TEMP     2
+#define BCTRL_EVENT_CTRL     3
+
+// event = base + sensor index
+#define BCTRL_EVENT_MAX_INDEX    10
+
+#define BCTRL_EVENT_READING_BASE 10
+#define BCTRL_EVENT_OUT_BASE     (BCTRL_EVENT_READING_BASE + BCTRL_EVENT_MAX_INDEX)
+#define BCTRL_EVENT_ERR_BASE     (BCTRL_EVENT_OUT_BASE + BCTRL_EVENT_MAX_INDEX)
+
+
+void BCTRL_Init(void (*eventCallback)(int event, int state));
+
 void BCTRL_SetKP(int kp);
 void BCTRL_SetTemp(int16_t temp);
 void BCTRL_SetCtrl(int ctrl);

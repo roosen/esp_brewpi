@@ -1,5 +1,5 @@
-#include "ets_sys.h"
-#include "osapi.h"
+#include <ets_sys.h>
+#include <osapi.h>
 #include "mqtt.h"
 #include "config.h"
 #include "gpio.h"
@@ -9,6 +9,7 @@
 #include "driver/i2c.h"
 #include "driver/i2c_oled.h"
 #include "beerctrl.h"
+#include "display.h"
 
 
 #define CONFIG_MQTT
@@ -38,17 +39,12 @@ static void ICACHE_FLASH_ATTR timer_cb(void *arg)
 		case 2:
 			ds18b20_read_all();
 			if (!ds18b20_get_temp(0, &temp)) {
-				char buf[16];
-
 				BCTRL_ReportNewReading(0, temp);
-
-				temp_to_string(temp, buf, sizeof(buf));
-				OLED_Print(0, 0, buf, 2);
-				os_printf("Temperature: %s Celsius\r\n", buf);
-
 				if (cnt >= DS18B20_SCAN_CNT) {
+					char buf[16];
 					uint8_t str_url[265];
 					// Send temperature to Thingspeak.com
+					temp_to_string(temp, buf, sizeof(buf));
 					os_sprintf(str_url, "key=KEY_THINGSPEAK&field1=%s", buf);
 					http_post("http://api.thingspeak.com/update", str_url, NULL);
 				}
@@ -81,7 +77,7 @@ void ICACHE_FLASH_ATTR user_init(void)
 	i2c_init();
 	OLED_Init();
 
-	BCTRL_Init();
+	BCTRL_Init(DISPLAY_BeerCtrlEvent);
 
 	os_timer_disarm(&ds18b20_timer);
 	os_timer_setfn(&ds18b20_timer, (os_timer_func_t *)timer_cb, (void *)0);
