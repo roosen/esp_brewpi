@@ -1,7 +1,7 @@
 #include <ets_sys.h>
 
 #include "beerctrl.h"
-#include "driver/gpio16.h"
+#include "cooler.h"
 
 
 #define CONFIG_KP   4
@@ -22,14 +22,14 @@ static void ICACHE_FLASH_ATTR setFridge(int state)
 {
 	switch (state) {
 	case BCTRL_FRIDGE_COOL:
-		gpio16_output_set(0);
+		COOLER_setState(COOLER_STATE_COOLING);
 		break;
 	case BCTRL_FRIDGE_HEAT:
-		gpio16_output_set(1);
+		COOLER_setState(COOLER_STATE_OFF);
 		break;
 	case BCTRL_FRIDGE_OFF:
 	default:
-		gpio16_output_set(1);
+		COOLER_setState(COOLER_STATE_OFF);
 		break;
 	}
 	if (eventCb)
@@ -40,8 +40,7 @@ void ICACHE_FLASH_ATTR BCTRL_Init(void (*eventCallback)(int event, int state))
 {
 	eventCb = eventCallback;
 
-	gpio16_output_set(1);
-	gpio16_output_conf();
+	COOLER_init();
 
 	BCTRL_SetKP(CONFIG_KP);
 	BCTRL_SetTemp(CONFIG_TEMP << 4);
