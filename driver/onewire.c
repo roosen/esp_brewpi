@@ -60,8 +60,6 @@ void ICACHE_FLASH_ATTR onewire_init()
 {
 	// Set ONEWIRE_PIN as gpio pin
 	PIN_FUNC_SELECT(ONEWIRE_MUX,  ONEWIRE_FUNC);
-	// Disable pull-down
-	PIN_PULLDWN_DIS(ONEWIRE_MUX);
 	// Enable pull-up
 	PIN_PULLUP_EN(ONEWIRE_MUX);
 	// Set ONEWIRE_PIN pin as an input
