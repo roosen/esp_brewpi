@@ -20,7 +20,7 @@ SDK_BASE	?= ../../esp-open-sdk/sdk/
 
 #Esptool.py path and port
 ESPTOOL		?= esptool.py
-ESPPORT		?= /dev/tty.usbserial
+ESPPORT		?= /dev/ttyUSB0
 
 # name for the target project
 TARGET		= app
