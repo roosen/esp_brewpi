@@ -45,7 +45,7 @@ static void ICACHE_FLASH_ATTR timer_cb(void *arg)
 					uint8_t str_url[265];
 					// Send temperature to Thingspeak.com
 					temp_to_string(temp, buf, sizeof(buf));
-					os_sprintf(str_url, "key=KEY_THINGSPEAK&field1=%s", buf);
+					os_sprintf(str_url, "api_key=%s&field1=%s", KEY_THINGSPEAK, buf);
 					http_post("http://api.thingspeak.com/update", str_url, NULL);
 				}
 			}
