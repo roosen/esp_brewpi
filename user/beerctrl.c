@@ -106,15 +106,17 @@ void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 
 void ICACHE_FLASH_ATTR BCTRL_Trigger(void)
 {
-	static int cnt;
+	if (b.ctrl == BCTRL_CTRL_AUTOMATIC) {
+		static int cnt;
 
-	if (cnt >= -b.output) {
-		setFridge(BCTRL_FRIDGE_OFF);
-	} else {
-		setFridge(BCTRL_FRIDGE_COOL);
+		if (cnt >= -b.output) {
+			setFridge(BCTRL_FRIDGE_OFF);
+		} else {
+			setFridge(BCTRL_FRIDGE_COOL);
+		}
+
+		cnt++;
+		if (cnt >= PERIOD)
+			cnt = 0;
 	}
-
-	cnt++;
-	if (cnt >= PERIOD)
-		cnt = 0;
 }
