@@ -2,6 +2,7 @@
 
 #include "beerctrl.h"
 #include "cooler.h"
+#include "heater.h"
 
 
 #define CONFIG_KP   4
@@ -22,14 +23,17 @@ static void ICACHE_FLASH_ATTR setFridge(int state)
 {
 	switch (state) {
 	case BCTRL_FRIDGE_COOL:
+		HEATER_setState(HEATER_STATE_OFF);
 		COOLER_setState(COOLER_STATE_COOLING);
 		break;
 	case BCTRL_FRIDGE_HEAT:
 		COOLER_setState(COOLER_STATE_OFF);
+		HEATER_setState(HEATER_STATE_HEATING);
 		break;
 	case BCTRL_FRIDGE_OFF:
 	default:
 		COOLER_setState(COOLER_STATE_OFF);
+		HEATER_setState(COOLER_STATE_OFF);
 		break;
 	}
 	if (eventCb)
@@ -41,6 +45,7 @@ void ICACHE_FLASH_ATTR BCTRL_Init(void (*eventCallback)(int event, int state))
 	eventCb = eventCallback;
 
 	COOLER_init();
+	HEATER_init();
 
 	BCTRL_SetKP(CONFIG_KP);
 	BCTRL_SetTemp(CONFIG_TEMP << 4);
