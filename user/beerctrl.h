@@ -33,6 +33,7 @@ void BCTRL_Init(void (*eventCallback)(int event, int state));
 
 void BCTRL_SetKP(int kp);
 void BCTRL_SetTemp(int16_t temp);
+int16_t BCTRL_GetTemp(void);
 void BCTRL_SetCtrl(int ctrl);
 void BCTRL_SetFridge(int state);
 

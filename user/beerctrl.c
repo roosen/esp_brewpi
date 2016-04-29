@@ -67,6 +67,11 @@ void ICACHE_FLASH_ATTR BCTRL_SetTemp(int16_t temp)
 		eventCb(BCTRL_EVENT_TEMP, temp);
 }
 
+int16_t ICACHE_FLASH_ATTR BCTRL_GetTemp(void)
+{
+	return b.temp;
+}
+
 void ICACHE_FLASH_ATTR BCTRL_SetCtrl(int ctrl)
 {
 	b.ctrl = ctrl;
