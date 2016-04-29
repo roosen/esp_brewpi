@@ -10,16 +10,19 @@
 BUILD_BASE	= build
 FW_BASE		= firmware
 
+OPEN_SDK_BASE = /home/henri/development/trees/esp-open-sdk/
+
 # Base directory for the compiler
-#XTENSA_TOOLS_ROOT ?= /opt/Espressif/crosstool-NG/builds/xtensa-lx106-elf/bin
-XTENSA_TOOLS_ROOT ?= ../../esp-open-sdk/xtensa-lx106-elf/bin
+XTENSA_TOOLS_ROOT ?= $(OPEN_SDK_BASE)/xtensa-lx106-elf/bin/
+
+PATH := $(PATH):$(XTENSA_TOOLS_ROOT)
 
 # base directory of the ESP8266 SDK package, absolute
 #SDK_BASE	?= /opt/Espressif/ESP8266_SDK
-SDK_BASE	?= ../../esp-open-sdk/sdk/
+SDK_BASE	?= $(OPEN_SDK_BASE)/sdk/
 
 #Esptool.py path and port
-ESPTOOL		?= esptool.py
+ESPTOOL		?= $(OPEN_SDK_BASE)/esptool/esptool.py
 ESPPORT		?= /dev/ttyUSB0
 
 # name for the target project
@@ -27,7 +30,7 @@ TARGET		= app
 
 # which modules (subdirectories) of the project to include in compiling
 MODULES		= driver user
-EXTRA_INCDIR    = include $(SDK_BASE)/../include
+EXTRA_INCDIR    = include $(OPEN_SDK_BASE)/include
 
 # libraries used in this project, mainly provided by the SDK
 LIBS		= c gcc hal phy pp net80211 lwip wpa upgrade main
