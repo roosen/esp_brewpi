@@ -20,6 +20,8 @@
 #define BCTRL_EVENT_KP       1
 #define BCTRL_EVENT_TEMP     2
 #define BCTRL_EVENT_CTRL     3
+#define BCTRL_EVENT_KI       4
+#define BCTRL_EVENT_KD       5
 
 // event = base + sensor index
 #define BCTRL_EVENT_MAX_INDEX    10
@@ -32,6 +34,8 @@
 void BCTRL_Init(void (*eventCallback)(int event, int state));
 
 void BCTRL_SetKP(int kp);
+void BCTRL_SetKI(int ki);
+void BCTRL_SetKD(int kd);
 void BCTRL_SetTemp(int16_t temp);
 int16_t BCTRL_GetTemp(void);
 void BCTRL_SetCtrl(int ctrl);

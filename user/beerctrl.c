@@ -6,6 +6,8 @@
 
 
 #define CONFIG_KP   4
+#define CONFIG_KI   1
+#define CONFIG_KD   1
 #define CONFIG_TEMP 11
 #define PERIOD      256
 
@@ -14,6 +16,11 @@ struct beerctrl_t {
 	int temp;
 	int output;
 	int kp;
+	int ki;
+	int kd;
+	int32_t integral;
+	uint32_t lasttime;
+	int32_t lasterror;
 };
 
 static struct beerctrl_t b;
@@ -48,9 +55,12 @@ void ICACHE_FLASH_ATTR BCTRL_Init(void (*eventCallback)(int event, int state))
 	HEATER_init();
 
 	BCTRL_SetKP(CONFIG_KP);
+	BCTRL_SetKI(CONFIG_KI);
+	BCTRL_SetKD(CONFIG_KD);
 	BCTRL_SetTemp(CONFIG_TEMP << 4);
 	BCTRL_SetCtrl(BCTRL_CTRL_AUTOMATIC);
 	setFridge(BCTRL_FRIDGE_OFF);
+	b.lasttime = system_get_time();
 }
 
 void ICACHE_FLASH_ATTR BCTRL_SetKP(int kp)
@@ -58,6 +68,20 @@ void ICACHE_FLASH_ATTR BCTRL_SetKP(int kp)
 	b.kp = kp;
 	if (eventCb)
 		eventCb(BCTRL_EVENT_KP, kp);
+}
+
+void ICACHE_FLASH_ATTR BCTRL_SetKI(int ki)
+{
+	b.ki = ki;
+	if (eventCb)
+		eventCb(BCTRL_EVENT_KI, ki);
+}
+
+void ICACHE_FLASH_ATTR BCTRL_SetKD(int kd)
+{
+	b.kd = kd;
+	if (eventCb)
+		eventCb(BCTRL_EVENT_KD, kd);
 }
 
 void ICACHE_FLASH_ATTR BCTRL_SetTemp(int16_t temp)
@@ -91,11 +115,20 @@ void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 	if (b.ctrl == BCTRL_CTRL_AUTOMATIC) {
 		unsigned char buf[16];
 		int32_t error = b.temp - temp;
+		uint32_t now = system_get_time() / 1000000;
+		int32_t deriviative;
+
+		uint32_t dt = now - b.lasttime;
 
 		if (eventCb)
 			eventCb(BCTRL_EVENT_ERR_BASE + idx, error);
 
-		b.output = b.kp * error;
+		b.integral += error * dt;
+		deriviative = (error - b.lasterror) / dt;
+		b.output = b.kp * error + b.ki * b.integral + b.kd * deriviative;
+
+		b.lasttime = now;
+		b.lasterror = error;
 
 		if (b.output > PERIOD)
 			b.output = PERIOD;
