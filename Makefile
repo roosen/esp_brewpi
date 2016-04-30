@@ -137,6 +137,9 @@ flash: firmware/0x00000.bin firmware/0x40000.bin
 test: flash
 	screen $(ESPPORT) 115200
 
+tags:
+	ctags -R
+
 clean:
 	$(Q) rm -f $(APP_AR)
 	$(Q) rm -f $(TARGET_OUT)
