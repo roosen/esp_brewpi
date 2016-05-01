@@ -591,11 +591,11 @@ void MQTT_Start()
 
 	os_sprintf(pub_topic, "/%08X/send", sysCfg.device_id);		// send data to topic: /chipid/send
 
-    mqtt_state.in_buffer = mqttRxBuf;
-    mqtt_state.in_buffer_length =sizeof(mqttRxBuf);
-    mqtt_state.out_buffer =  mqttTxBuf;
-    mqtt_state.out_buffer_length = sizeof(mqttTxBuf);
-    mqtt_state.connect_info = &connect_info;
+	mqtt_state.in_buffer = mqttRxBuf;
+	mqtt_state.in_buffer_length =sizeof(mqttRxBuf);
+	mqtt_state.out_buffer =  mqttTxBuf;
+	mqtt_state.out_buffer_length = sizeof(mqttTxBuf);
+	mqtt_state.connect_info = &connect_info;
 
 	system_os_task(MQTT_Task, mqtt_procTaskPrio, mqtt_procTaskQueue, mqtt_procTaskQueueLen);
 	system_os_post(mqtt_procTaskPrio, 0, 0);
