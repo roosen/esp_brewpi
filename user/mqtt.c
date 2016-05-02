@@ -209,7 +209,7 @@ mqtt_dns_found(const char *name, ip_addr_t *ipaddr, void *arg)
 }
 
 
-int mqtt_publish_with_length(const char* topic, const char* data, int data_length, int qos, int retain)
+static int ICACHE_FLASH_ATTR mqtt_publish_with_length(const char* topic, const char* data, int data_length, int qos, int retain)
 {
 
   os_printf("MQTT: sending publish...\r\n");
@@ -220,7 +220,7 @@ int mqtt_publish_with_length(const char* topic, const char* data, int data_lengt
   return 0;
 }
 
-static void deliver_publish(mqtt_state_t* state, uint8_t* message, int length)
+static ICACHE_FLASH_ATTR void deliver_publish(mqtt_state_t* state, uint8_t* message, int length)
 {
 	uint8_t buff[100];
 	uint8_t topic[100];
@@ -580,7 +580,7 @@ MQTT_Task(os_event_t *events)
 }
 
 
-void MQTT_Start()
+void ICACHE_FLASH_ATTR MQTT_Start()
 {
 	connState = WIFI_INIT;
 	os_sprintf(client_id, MQTT_CLIENT_ID, sysCfg.device_id);	//MQTT client id
@@ -601,7 +601,7 @@ void MQTT_Start()
 	system_os_post(mqtt_procTaskPrio, 0, 0);
 }
 
-void MQTT_Pub(uint32_t data)
+void ICACHE_FLASH_ATTR MQTT_Pub(uint32_t data)
 {
 	char buf[64];
 	if(connState != MQTT_DATA)
