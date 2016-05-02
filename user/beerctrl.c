@@ -1,5 +1,5 @@
 #include <ets_sys.h>
-
+#include <osapi.h>
 #include "beerctrl.h"
 #include "cooler.h"
 #include "heater.h"
@@ -9,22 +9,28 @@
 #define CONFIG_KI   1
 #define CONFIG_KD   1
 #define CONFIG_TEMP 11
+#define CONFIG_DEADBAND 10
 #define PERIOD      256
+
+#define CONFIG_DEBUG_PID
 
 struct beerctrl_t {
 	int ctrl;
-	int temp;
-	int output;
-	int kp;
-	int ki;
-	int kd;
+	int16_t temp;
+	int32_t output;
+	int32_t kp;
+	int32_t ki;
+	int32_t kd;
 	int32_t integral;
 	uint32_t lasttime;
 	int32_t lasterror;
+	int32_t out_min;
+	int32_t out_max;
 };
 
 static struct beerctrl_t b;
 static void (*eventCb)(int event, int state);
+
 
 static void ICACHE_FLASH_ATTR setFridge(int state)
 {
@@ -54,6 +60,7 @@ void ICACHE_FLASH_ATTR BCTRL_Init(void (*eventCallback)(int event, int state))
 	COOLER_init();
 	HEATER_init();
 
+	BCTRL_SetLimits(-PERIOD, PERIOD);
 	BCTRL_SetKP(CONFIG_KP);
 	BCTRL_SetKI(CONFIG_KI);
 	BCTRL_SetKD(CONFIG_KD);
@@ -61,6 +68,12 @@ void ICACHE_FLASH_ATTR BCTRL_Init(void (*eventCallback)(int event, int state))
 	BCTRL_SetCtrl(BCTRL_CTRL_AUTOMATIC);
 	setFridge(BCTRL_FRIDGE_OFF);
 	b.lasttime = system_get_time();
+}
+
+void ICACHE_FLASH_ATTR BCTRL_SetLimits(int32_t min, int32_t max)
+{
+	b.out_min = min;
+	b.out_max = max;
 }
 
 void ICACHE_FLASH_ATTR BCTRL_SetKP(int kp)
@@ -114,29 +127,45 @@ void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 {
 	if (b.ctrl == BCTRL_CTRL_AUTOMATIC) {
 		unsigned char buf[16];
-		int32_t error = b.temp - temp;
+		int32_t  error = b.temp - temp;
 		uint32_t now = system_get_time() / 1000000;
-		int32_t deriviative;
-
-		uint32_t dt = now - b.lasttime;
+		int32_t  deriviative;
+		int32_t dt = (int32_t)(now - b.lasttime);
 
 		if (eventCb)
 			eventCb(BCTRL_EVENT_ERR_BASE + idx, error);
 
+		/* integral calculation */
 		b.integral += error * dt;
+		if (b.integral > b.out_max)
+			b.integral = b.out_max;
+		else if (b.integral < b.out_min)
+			b.integral = b.out_min;
+
+		/* deriviative calculation */
 		deriviative = (error - b.lasterror) / dt;
+
+		/* output calculation */
 		b.output = b.kp * error + b.ki * b.integral + b.kd * deriviative;
+		if (b.output > b.out_max)
+			b.output = b.out_max;
+		else if (b.output < b.out_min)
+			b.output = b.out_min;
 
 		b.lasttime = now;
 		b.lasterror = error;
 
-		if (b.output > PERIOD)
-			b.output = PERIOD;
-		else if (b.output < -PERIOD)
-			b.output = -PERIOD;
-
 		if (eventCb)
 			eventCb(BCTRL_EVENT_OUT_BASE + idx, b.output);
+
+#ifdef CONFIG_DEBUG_PID
+		os_printf("PID:\n");
+		os_printf("\tdt: %d\n", dt);
+		os_printf("\terror: %d\n", error);
+		os_printf("\tintegral: %d\n", b.integral);
+		os_printf("\tderiviative: %d\n", deriviative);
+		os_printf("\toutput: %d\n", b.output);
+#endif
 	}
 	if (eventCb)
 		eventCb(BCTRL_EVENT_READING_BASE + idx, temp);

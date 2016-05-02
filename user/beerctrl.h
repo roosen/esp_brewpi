@@ -33,6 +33,7 @@
 
 void BCTRL_Init(void (*eventCallback)(int event, int state));
 
+void BCTRL_SetLimits(int32_t min, int32_t max);
 void BCTRL_SetKP(int kp);
 void BCTRL_SetKI(int ki);
 void BCTRL_SetKD(int kd);
