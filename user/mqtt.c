@@ -601,13 +601,13 @@ void ICACHE_FLASH_ATTR MQTT_Start()
 	system_os_post(mqtt_procTaskPrio, 0, 0);
 }
 
-void ICACHE_FLASH_ATTR MQTT_Pub(uint32_t data)
+void ICACHE_FLASH_ATTR MQTT_Pub(int32_t dt, int32_t error, int32_t integral, int32_t deriviative, int32_t output)
 {
 	char buf[64];
 	if(connState != MQTT_DATA)
 		return;
 
-	uint16_t len = os_sprintf(buf, "{\"type\":\"pir\", \"data\":\"%d\"}", data);
+	uint16_t len = os_sprintf(buf, "{\n\t\"dt\":%d,\n\t\"err\":%d,\n\t\"integ\":%d,\n\t\"deriv\":%d,\n\t\"out\":%d\n}", dt, error, integral, deriviative, output);
 	mqtt_publish_with_length(pub_topic, buf, len, 0, 0);
 }
 

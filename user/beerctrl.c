@@ -165,6 +165,7 @@ void ICACHE_FLASH_ATTR BCTRL_ReportNewReading(int idx, int16_t temp)
 		os_printf("\tintegral: %d\n", b.integral);
 		os_printf("\tderiviative: %d\n", deriviative);
 		os_printf("\toutput: %d\n", b.output);
+		MQTT_Pub(dt, error, b.integral, deriviative, b.output);
 #endif
 	}
 	if (eventCb)
