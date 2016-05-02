@@ -176,14 +176,20 @@ void ICACHE_FLASH_ATTR BCTRL_Trigger(void)
 	if (b.ctrl == BCTRL_CTRL_AUTOMATIC) {
 		static int cnt;
 
-		if (cnt >= -b.output) {
-			setFridge(BCTRL_FRIDGE_OFF);
-		} else {
+		/* "PWM" for cooling and heating */
+		if (b.output < (b.out_min + CONFIG_DEADBAND) ||
+				(b.output < -CONFIG_DEADBAND && cnt < -b.output))
 			setFridge(BCTRL_FRIDGE_COOL);
-		}
+		else if (b.output > (b.out_max - CONFIG_DEADBAND) ||
+				(b.output > CONFIG_DEADBAND && cnt < b.output))
+			setFridge(BCTRL_FRIDGE_HEAT);
+		else
+			setFridge(BCTRL_FRIDGE_OFF);
 
 		cnt++;
-		if (cnt >= PERIOD)
+		/* Wrap */
+		if (cnt >= -b.out_min)
 			cnt = 0;
 	}
 }
+
