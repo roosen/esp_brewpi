@@ -8,7 +8,7 @@
 #define CONFIG_KP   4
 #define CONFIG_KI   1
 #define CONFIG_KD   1
-#define CONFIG_TEMP 11
+#define CONFIG_TEMP 4
 #define CONFIG_DEADBAND 10
 #define PERIOD      256
 
