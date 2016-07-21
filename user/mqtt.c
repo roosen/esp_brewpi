@@ -4,7 +4,6 @@
 #include "os_type.h"
 #include "mem.h"
 #include "mqtt_msg.h"
-#include "debug.h"
 #include "user_config.h"
 #include "config.h"
 #include "beerctrl.h"
