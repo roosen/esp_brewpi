@@ -15,7 +15,6 @@ typedef struct{
 
 	uint8_t sta_ssid[32];
 	uint8_t sta_pwd[32];
-	uint32_t sta_type;
 
 	uint8_t ap_ssid[32];
 	uint8_t ap_pwd[32];

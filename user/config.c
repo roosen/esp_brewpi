@@ -72,7 +72,6 @@ void CFG_Load()
 
 		os_sprintf(sysCfg.sta_ssid, "%s", STA_SSID);
 		os_sprintf(sysCfg.sta_pwd, "%s", STA_PASS);
-		sysCfg.sta_type = STA_TYPE;
 
 		os_sprintf(sysCfg.mqtt_host, "%s", MQTT_HOST);
 		sysCfg.mqtt_port = MQTT_PORT;
