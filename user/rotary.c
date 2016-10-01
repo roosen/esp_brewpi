@@ -64,20 +64,21 @@ void ICACHE_FLASH_ATTR ROTARY_init(void (*buttonCallback)(void), void (*rotation
 	btnCallback = buttonCallback;
 	rotCallback = rotationCallback;
 
-    // Set pin functions
-    PIN_FUNC_SELECT(ROTARY_SW_MUX, ROTARY_SW_FUNC);
-    PIN_FUNC_SELECT(ROTARY_CLK_MUX, ROTARY_CLK_FUNC);
-    PIN_FUNC_SELECT(ROTARY_DT_MUX, ROTARY_DT_FUNC);
+	// Set pin functions
+	PIN_FUNC_SELECT(ROTARY_SW_MUX, ROTARY_SW_FUNC);
+	PIN_FUNC_SELECT(ROTARY_CLK_MUX, ROTARY_CLK_FUNC);
+	PIN_FUNC_SELECT(ROTARY_DT_MUX, ROTARY_DT_FUNC);
 
-    // Register interrupt handler
-    ETS_GPIO_INTR_ATTACH(rotary_handler, NULL);
-    gpio_output_set(0, 0, 0, BIT(ROTARY_SW_PIN) | BIT(ROTARY_CLK_PIN) | BIT(ROTARY_DT_PIN));
+	// Register interrupt handler
+	ETS_GPIO_INTR_ATTACH(rotary_handler, NULL);
+	gpio_output_set(0, 0, 0, BIT(ROTARY_SW_PIN) | BIT(ROTARY_CLK_PIN) | BIT(ROTARY_DT_PIN));
 
-    // Clear status
-    GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(ROTARY_SW_PIN) | BIT(ROTARY_CLK_PIN) | BIT(ROTARY_DT_PIN));
+	// Clear status
+	GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(ROTARY_SW_PIN) | BIT(ROTARY_CLK_PIN) | BIT(ROTARY_DT_PIN));
 
-    // Enable negative edge on pin SW, both edges on CLK and DT
-    gpio_pin_intr_state_set(GPIO_ID_PIN(ROTARY_SW_PIN),  GPIO_PIN_INTR_NEGEDGE);
-    gpio_pin_intr_state_set(GPIO_ID_PIN(ROTARY_CLK_PIN), GPIO_PIN_INTR_ANYEDGE);
-    gpio_pin_intr_state_set(GPIO_ID_PIN(ROTARY_DT_PIN),  GPIO_PIN_INTR_ANYEDGE);
+	// Enable negative edge on pin SW, both edges on CLK and DT
+	gpio_pin_intr_state_set(GPIO_ID_PIN(ROTARY_SW_PIN),  GPIO_PIN_INTR_NEGEDGE);
+	gpio_pin_intr_state_set(GPIO_ID_PIN(ROTARY_CLK_PIN), GPIO_PIN_INTR_ANYEDGE);
+	gpio_pin_intr_state_set(GPIO_ID_PIN(ROTARY_DT_PIN),  GPIO_PIN_INTR_ANYEDGE);
 }
+
